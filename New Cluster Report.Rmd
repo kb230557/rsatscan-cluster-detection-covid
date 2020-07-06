@@ -1,0 +1,57 @@
+---
+title: 
+date: 
+output: html_document
+params:
+  data: "placeholder"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+cluster <- as.data.frame(params$data[[3]])
+linelist <- as.data.frame(params$data[[1]])
+
+```
+
+# Summary for Cluster ID `r cluster$ClusterID`
+
+\newline
+
+A significant cluster has been identified for **`r cluster$Disease`**. Specimen dates for cases in the cluster range from **`r format(cluster$StartDate, "%B %d, %Y")`** to **`r format(cluster$EndDate, "%B %d, %Y")`**. The observed number of cases in the cluster is **`r cluster$OBSERVED`**; the expected number of cases was **`r round(cluster$EXPECTED, 2)`**, for an observed-to-expected ratio of `r round(cluster$ODE, 2)`. 
+
+\newline
+
+A line list and map of cases included in the cluster can be reviewed below.
+
+\newline
+
+***
+
+
+## Line List
+
+Basic demographics for cases in this cluster appear below.
+
+```{r table, echo=FALSE}
+# linelist %>%
+#   kable() %>%
+#   column_spec(column = which(colnames(linelist) %in% c('Epi_Comment', 'Reporter_Comment')), width_min = "8cm") %>%
+#   kable_styling(c("hover", "striped"), fixed_thead = T) #%>%
+# # scroll_box(width = "100%", height = "600px") 
+
+linelist %>%
+  datatable()
+
+
+```
+
+***
+
+## Cluster Map
+
+Black points represent cases that are included in this cluster. Hover over each point to view the case's state case number, age, and sex at onset. The blue circle represents the cluster area identified by SatScan - click on the cluster to see the date range as well as observed and expected case counts. Each layer can be turned on and off using the layer controls icon in the top right corner.
+
+```{r map, echo=FALSE}
+params$data[[2]]
+```

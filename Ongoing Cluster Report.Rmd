@@ -1,0 +1,60 @@
+---
+title: 
+date: 
+output: html_document
+# params:
+#   data: "placeholder"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+cluster <- as.data.frame(params$data[[4]])
+linelist <- as.data.frame(params$data[[2]])
+newlist <- params$data[[5]]
+
+```
+
+
+# Updated Summary for Cluster ID `r params$data[[1]]`
+
+\newline
+
+<p style="color: red; font-weight: bold;">This cluster has been updated with new cases.<p>
+
+\newline
+
+Specimen dates in this cluster now range from **`r format(min(linelist$Specimen_Date), "%B %d, %Y")`** to **`r format(max(linelist$Specimen_Date), "%B %d, %Y")`**. There is a total of **`r nrow(linelist)`** cases in the cluster. A new area was added to this cluster today, `r format(Sys.Date(), "%B %d, %Y")` - **`r cluster$OBSERVED`** cases were observed in the new area when **`r round(cluster$EXPECTED, 2)`** cases were expected.
+
+\newline
+
+A line list and map of cases included in the cluster can be reviewed below.
+
+\newline
+
+***
+
+## Line List
+
+Basic demographics for cases in this cluster appear below. The Date_Added field refers to the day the SatScan program identified each case as potentially belonging in this cluster. New cases added to the cluster today are highlighted in blue. 
+```{r table, echo=FALSE}
+
+linelist %>%
+  kable() %>%
+  row_spec(which(linelist$State_Case_Number %in%  params$data[[5]]$State_Case_Number), bold = T, background = "#e6ebff") %>%
+  column_spec(column = which(colnames(linelist) %in% c('Epi_Comment', 'Reporter_Comment')), width_min = "8cm") %>%
+  kable_styling(c("hover"), fixed_thead = T) #%>%
+# scroll_box(width = "100%", height = "600px") 
+
+```
+
+
+***
+
+## Cluster Map
+
+Points represent cases that are included in this cluster - red indicates new cases added to this cluster today. Hover over each point to view the case's state case number, age, sex at onset, and date added to the cluster. The blue circle represents the new area added to the cluster today. Each layer can be turned on and off using the layer controls icon in the top right corner.
+
+```{r map, echo=FALSE}
+params$data[[3]]
+```
