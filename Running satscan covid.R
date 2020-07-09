@@ -12,7 +12,7 @@ library(DT)
 
 
 ####IMPORTANT NOTES:
-#If the case history file is ever manipulated directly in Excel, be sure to save the RunDate column as a Cusom Format type 'm/d/yyyy' before closing
+#If the case history file is ever manipulated directly in Excel, be sure to save the RunDate column as a Custom Format type 'm/d/yyyy' before closing
 #Same as above for the cluster history file and the StartDate and EndDate columns
 
 #Set email settings - only needs to be done once per computer
@@ -35,8 +35,8 @@ Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 
 #=================PREPARING FILES AND PARAMETERS================#
 
-#Importing Business Objects Report
-#Note: Report pulls last 14 days for convenience then is filtered to correct analysis dates below
+#Importing Business Objects Report and clean variables
+#Note: Report pulls last 14 days for household exclusions (see notes below) then is filtered to correct analysis dates
 satscanLineList <- list.files("C:/Users/kbemis/Downloads", pattern = "^COVID_Line_List_for_SatScan", full.names = T)
 events <- read_csv(satscanLineList) %>% 
   distinct() %>%
@@ -53,8 +53,7 @@ events <- read_csv(satscanLineList) %>%
          Long = Longitude__Home_,
          Employer = Name_of_Employer,
          City = Current_City) %>%
-  mutate(Specimen_Date = ymd(str_remove(Specimen_Date, '[[:space:]].*'))) %>%
-  filter((Specimen_Date < Sys.Date() - 2) & (Specimen_Date > Sys.Date() - 9))
+  mutate(Specimen_Date = ymd(str_remove(Specimen_Date, '[[:space:]].*'))) 
 
 
 #Filter out cases without clean addresses
@@ -62,21 +61,36 @@ events <- events %>%
   filter(Address_Verified__Home_ == "YES") %>%
   filter(!grepl("* box *", Current_Address_Line_1, ignore.case = T)) #Remove PO Box addresses
 
+  
+#Filter out cases linked to congregate settings, other outbreaks, or likely household transmission 
+#Goal is to detect community transmission
+#Note: How should assumptions/goals change under extensive contact tracing?
 
-#Filter out cases not linked to congregate settings/outbreaks (goal is to detect community transmission)
-#NOTE: This section will require review and decision making before going live
-#Congregate setting list needs updating (e.g. drug rx facility, homeless shelters)
-#Should we exclude all cases currently linked to outbreaks?
-#Should we exclude cases sharing same address/last name in last 14 days? 
-#In general how should assumptions/goals change under extensive contact tracing
-
-congregate_settings <- c("Long-term/Skilled Care Facility", "Assisted/Supported Living Facility", "Independent/Senior Living Facility", "Developmental Disability Facility", "Other Long-Term Facility", "Group Home", "Mental Health Facility")
+#Household transmission
+events <- events %>%
+  group_by(Last, Lat, Long) %>% 
+  arrange(Last, Lat, Long, Specimen_Date) %>% 
+  mutate(Household_Lag = Specimen_Date - first(Specimen_Date)) %>%
+  ungroup %>%
+  filter(Household_Lag < 2)
+  
+#Congregate settings and outbreaks
+congregate_settings <- c("Long-term/Skilled Care Facility", "Assisted/Supported Living Facility", "Independent/Senior Living Facility", 
+                         "Developmental Disability Facility", "Other Long-Term Facility", "Group Home", 
+                         "Mental Health Facility", "Alcohol/Drug Treatment Facility", "Correction Facility or Jail",
+                         "Military Facility")
 
 events <- events %>%
   filter(Current_Address_Type == "Home") %>%
-  filter(!Patient_Attends_Resides %in% congregate_settings) 
+  filter(!Patient_Attends_Resides %in% congregate_settings) %>%
+  filter(is.na(Is_Part_of_Outbreak) | Is_Part_of_Outbreak != "Yes" )
 
-         
+
+#Filter to correct analysis dates (6 days with a 2 day lag)
+events <- events %>%
+  filter((Specimen_Date < Sys.Date() - 2) & (Specimen_Date > Sys.Date() - 9))
+
+
 #Setting disease name for incorporation in history files
 disease_run_name <- "COVID"
   
@@ -489,8 +503,9 @@ if (max(session$col$RECURR_INT) < 100) {             ####REDUCE NUMBER IF TESTIN
 #   
 # }
 
-#Print results of run (if email not being used, else can disable)
+#Print results of run to console(if email not being used, else can disable)
 readLines('satscan_function_log.txt')
+#cluster_temp$RECURR_INT   #check recurrence interval if cluster detected
 
 #Delete log file after emailed
 unlink('satscan_function_log.txt')
