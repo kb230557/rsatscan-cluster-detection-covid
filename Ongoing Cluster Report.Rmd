@@ -2,8 +2,8 @@
 title: 
 date: 
 output: html_document
-# params:
-#   data: "placeholder"
+params:
+  data: "placeholder"
 ---
 
 ```{r setup, include=FALSE}

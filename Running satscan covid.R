@@ -432,7 +432,7 @@ if (max(session$col$RECURR_INT) < 100) {             ####REDUCE NUMBER IF TESTIN
         rmarkdown::render(input = "Ongoing Cluster Report.Rmd", 
                           output_file = paste0("Clusters/Cluster Report ID ", which_clust, "_Updated.html"),
                           params = list(data = report_data))
-        
+
         #Email report to epidemiologist
         # send.mail(from = key_get("satscan_sender"),
         #           to = "",                       
