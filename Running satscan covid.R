@@ -233,7 +233,7 @@ if (max(session$col$RECURR_INT) < 100) {             ####REDUCE NUMBER IF TESTIN
       select(ClusterID, Disease, LATITUDE, LONGITUDE, RADIUS, StartDate, EndDate, P_VALUE, RECURR_INT, OBSERVED, EXPECTED, ODE)
     
     #Identifying case list of most likely cluster (current and past - filtered to just current involved in next step)
-    all_involved <- session$gis %>% filter(CLUSTER == 1) %>% select(LOC_ID)
+    all_involved <- session$gis %>% filter(CLUSTER == i) %>% select(LOC_ID)
     
     #Identifying just current cases involved in cluster
     cases_involved <- events %>% 
@@ -506,6 +506,7 @@ if (max(session$col$RECURR_INT) < 100) {             ####REDUCE NUMBER IF TESTIN
 #Print results of run to console(if email not being used, else can disable)
 readLines('satscan_function_log.txt')
 #cluster_temp$RECURR_INT   #check recurrence interval if cluster detected
+#session$col %>% View()
 
 #Delete log file after emailed
 unlink('satscan_function_log.txt')
