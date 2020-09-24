@@ -185,7 +185,7 @@ if (class(session) == "try-error"){
 #=================PACKAGING SATSCAN RESULTS================#
 
 #If/Else determines if a significant cluster has been detected and executes different steps depending on answer
-if (max(session$col$RECURR_INT) < 100) {             ####REDUCE NUMBER IF TESTING OUTPUT/LOOPS
+if (max(session$col$RECURR_INT) < 300) {             ####REDUCE NUMBER IF TESTING OUTPUT/LOOPS
   
   #Add result to log file
   sink(file = 'satscan_function_log.txt', append = T)
