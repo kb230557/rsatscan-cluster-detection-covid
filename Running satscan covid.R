@@ -218,7 +218,7 @@ if (max(session$col$RECURR_INT) < 300) {             ####REDUCE NUMBER IF TESTIN
   
   
   #Determine number of significant clusters
-  cluster_num <- sum(session$col$RECURR_INT > 99)   ####REDUCE NUMBER IF TESTING OUTPUT/LOOPS
+  cluster_num <- sum(session$col$RECURR_INT > 299)   ####REDUCE NUMBER IF TESTING OUTPUT/LOOPS
   
   #Logging each cluster to history file
   for (i in 1:cluster_num) {
